@@ -1,3 +1,31 @@
+// Protect Route Strictly via Server Validation
+async function verifySession() {
+    const token = localStorage.getItem('authToken');
+    if (window.location.pathname.endsWith('stress2.html')) {
+        if (!token) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/auth/verify', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': '69420'
+                }
+            });
+            const data = await response.json();
+            if (!data.success) {
+                logoutUser();
+            }
+        } catch (error) {
+            console.log("Auth verification error:", error);
+        }
+    }
+}
+verifySession();
+
 async function detectStress() {
 
     // Disable button to prevent spam
@@ -37,6 +65,7 @@ async function detectStress() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'ngrok-skip-browser-warning': '69420'
             },
             body: JSON.stringify(input_data)
@@ -131,5 +160,6 @@ function downloadReport() {
 
 function logoutUser() {
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('authToken');
     window.location.href = 'login.html';
 }

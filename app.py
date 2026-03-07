@@ -6,12 +6,14 @@ import datetime
 from predict import predict_stress, get_stress_suggestions
 from pyngrok import ngrok
 from dotenv import load_dotenv
+import jwt
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='stress1')
 CORS(app)
-
-# Initialize globals
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret-key-change-in-prod')
 client = None
 db = None
 users_collection = None
@@ -45,20 +47,32 @@ def register_user():
     data = request.json
     
     if users_collection is None:
-        return jsonify({"success": True, "message": "Mock Registration (MongoDB Offline)", "user_id": "mock_offline_user"})
+        return jsonify({"success": True, "message": "Mock Registration (MongoDB Offline)", "user_id": "mock_offline_user", "token": "mock_token"})
         
     try:
         # Create a new document representing a user
         user_doc = {
             "name": data.get("name"),
             "email": data.get("email"),
-            "password": data.get("password"), # In a real app, hash this!
+            "password": generate_password_hash(data.get("password")), # Secure hashing
             "created_at": datetime.datetime.utcnow()
         }
         
         # Insert into 'users' collection
         result = users_collection.insert_one(user_doc)
-        return jsonify({"success": True, "message": "User registered successfully", "user_id": str(result.inserted_id)})
+        
+        # Issue JWT Token immediately
+        token = jwt.encode({
+            'user': data.get("email"),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm="HS256")
+        
+        return jsonify({
+            "success": True, 
+            "message": "User registered successfully", 
+            "user_id": str(result.inserted_id),
+            "token": token
+        })
         
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -68,26 +82,58 @@ def login_user():
     data = request.json
     
     if users_collection is None:
-        return jsonify({"success": True, "message": "Mock Login (MongoDB Offline)"})
+        return jsonify({"success": True, "message": "Mock Login (MongoDB Offline)", "token": "mock_token"})
         
     try:
         email = data.get("email")
         password = data.get("password")
         
-        # In a real app, you would hash the incoming password and compare.
-        # Here we just do a direct match for simplicity based on the register logic.
-        user = users_collection.find_one({"email": email, "password": password})
+        # Find user and securely check hash
+        user = users_collection.find_one({"email": email})
         
-        if user:
-            return jsonify({"success": True, "message": "Login successful"})
+        if user and check_password_hash(user['password'], password):
+            # Issue securely signed JWT Token
+            token = jwt.encode({
+                'user': email,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+            }, app.config['SECRET_KEY'], algorithm="HS256")
+            
+            return jsonify({"success": True, "message": "Login successful", "token": token})
         else:
-            return jsonify({"success": False, "error": "Invalid email or password"}), 401
+            return jsonify({"success": False, "error": "Invalid email or password."}), 401
             
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(" ")[1]
+                
+        if not token:
+            return jsonify({'success': False, 'error': 'Token is missing! Please log in.'}), 401
+            
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['user']
+        except Exception as e:
+            return jsonify({'success': False, 'error': 'Token is invalid or expired! Please log in again.'}), 401
+            
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+@app.route('/api/auth/verify', methods=['GET'])
+@token_required
+def verify_auth_token(current_user):
+    return jsonify({"success": True, "message": "Token is valid", "user": current_user})
+
 @app.route('/api/predict', methods=['POST'])
-def handle_prediction():
+@token_required
+def handle_prediction(current_user):
     input_data = request.json
     
     try:
@@ -108,7 +154,7 @@ def handle_prediction():
         
         # 3. Save full report to MongoDB
         report_doc = {
-            "user_email": input_data.get("email", "anonymous"), # Link to user if passed
+            "user_email": current_user, # Link strictly to authorized JWT user
             "input_features": input_data,
             "predicted_stress": stress_level,
             "suggestions": suggestions,

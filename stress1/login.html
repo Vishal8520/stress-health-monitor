@@ -10,7 +10,7 @@
 
     <div class="container">
 
-        <h1>🌿 Stress Health Monitor</h1>
+        <h1>Stress Health Monitor</h1>
 
         <h2>Login</h2>
 
@@ -54,8 +54,9 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    // Save email to link to future reports
+                    // Save email and token to link to future reports
                     localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('authToken', result.token);
                     window.location.href = 'stress2.html';
                 } else {
                     alert('Login Failed: ' + result.error);

@@ -10,7 +10,7 @@
 
     <div class="container">
 
-        <h1>🌿 Stress Health Monitor</h1>
+        <h1>Stress Health Monitor</h1>
 
         <h2>Registration</h2>
 
@@ -61,6 +61,7 @@
 
                 const result = await response.json();
                 if (result.success) {
+                    localStorage.setItem('authToken', result.token);
                     window.location.href = 'stress2.html';
                 } else {
                     alert('Registration Failed: ' + result.error);
