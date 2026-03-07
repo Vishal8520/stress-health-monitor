@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import datetime
 from predict import predict_stress, get_stress_suggestions
 from pyngrok import ngrok
+from dotenv import load_dotenv
 
 # Initialize Flask app
 app = Flask(__name__, static_folder='stress1')
@@ -19,7 +20,7 @@ reports_collection = None
 # Initialize MongoDB connection
 # Connects to default local MongoDB instance or a Cloud URI if provided in environment variables
 try:
-    mongo_uri = os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
+    mongo_uri = os.getenv("MONGO_URL")
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
     client.server_info() # Trigger exception if cannot connect
     db = client['stress_detection_db']
@@ -128,17 +129,20 @@ def handle_prediction():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-if __name__ == '__main__':
-    # Setup ngrok
-    port = 5000
-    try:
-        public_url = ngrok.connect(port).public_url
-        print(f" \n\n=======================================================")
-        print(f" -> YOUR PUBLIC INTERNET LINK IS LIVE!")
-        print(f" -> {public_url} ")
-        print(f"=======================================================\n\n")
-    except Exception as e:
-        print(f"Warning: Could not start ngrok tunnel. {e}")
+    # Get port from environment variable for cloud hosting, fallback to 5000 locally
+    port = int(os.environ.get("PORT", 5000))
+    
+    # Check if we should start ngrok (only locally)
+    if os.environ.get("FLASK_ENV") != "production":
+        try:
+            public_url = ngrok.connect(port).public_url
+            print(f" \n\n=======================================================")
+            print(f" -> YOUR PUBLIC INTERNET LINK IS LIVE!")
+            print(f" -> {public_url} ")
+            print(f"=======================================================\n\n")
+        except Exception as e:
+            print(f"Warning: Could not start ngrok tunnel. {e}")
 
-    print(f"Starting local Flask server on http://localhost:{port}")
-    app.run(port=port)
+    print(f"Starting local Flask server on http://0.0.0.0:{port}")
+    # Setting host='0.0.0.0' allows the cloud server to expose the app to external traffic
+    app.run(host='0.0.0.0', port=port)
