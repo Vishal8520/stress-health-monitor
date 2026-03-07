@@ -24,7 +24,7 @@
 
             <!-- Daily Routine -->
             <label>Sleep Hours</label>
-            <input type="number" step="0.5" id="sleep" required>
+            <input type="number" step="0.5" id="sleep" max="12" required>
 
             <label>Sleep Timing</label>
             <select id="sleep_timing" required>
@@ -34,16 +34,16 @@
             </select><br><br>
 
             <label>Work Hours</label>
-            <input type="number" step="0.5" id="work" required>
+            <input type="number" step="0.5" id="work" max="15" required>
 
             <label>Study Hours</label>
-            <input type="number" step="0.5" id="study" required>
+            <input type="number" step="0.5" id="study" max="10" required>
 
             <label>Exercise (hours/day)</label>
-            <input type="number" step="0.5" id="exercise" required>
+            <input type="number" step="0.5" id="exercise" max="4" required>
 
             <label>Water Intake (glasses)</label>
-            <input type="number" id="water" required>
+            <input type="number" id="water" max="10" required>
 
             <!-- Stress Factors -->
             <label>Exam Preparation?</label>
@@ -79,9 +79,18 @@
 
         <div id="suggestion"></div>
 
+        <div class="action-buttons" id="actionButtons" style="display: none;">
+            <button id="downloadBtn" onclick="downloadReport()">Download Report</button>
+        </div>
+
+        <button class="logout-btn" onclick="logoutUser()">Logout</button>
+
     </div>
 
     <div class="watermark">Created by VISHAL GHASOLIYA</div>
+
+    <!-- Ensure logic functions are linked -->
+    <script src="stress.js"></script>
 
 </body>
 

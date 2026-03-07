@@ -5,8 +5,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-    background-attachment: fixed;
+    background: #E8F5E9;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -104,6 +103,36 @@ button:active {
     transform: translateY(0);
 }
 
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-buttons button {
+    flex: 1;
+}
+
+#downloadBtn {
+    background: linear-gradient(to right, #3498db, #2980b9);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+#downloadBtn:hover {
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.logout-btn {
+    background: linear-gradient(to right, #e74c3c, #c0392b);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    margin-top: 25px;
+    width: 100%;
+}
+
+.logout-btn:hover {
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
 #result {
     margin-top: 30px;
     font-size: 22px;
@@ -179,6 +208,6 @@ button:active {
 }
 
 .watermark::before {
-    content: "🚀";
+    content: "";
     font-size: 16px;
 }

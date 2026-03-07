@@ -129,6 +129,7 @@ def handle_prediction():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+if __name__ == '__main__':
     # Get port from environment variable for cloud hosting, fallback to 5000 locally
     port = int(os.environ.get("PORT", 5000))
     

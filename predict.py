@@ -19,33 +19,40 @@ def get_stress_suggestions(input_data, stress_level):
     # If stress is Medium or High, provide mitigation strategies
     if stress_level in ["Medium", "High"]:
         if input_data.get("Sleep_Hours", 8) < 7:
-            suggestions.append("- Sleep: You are getting less than 7 hours of sleep. Try to prioritize sleeping earlier to hit 7-8 hours.")
+            suggestions.append("Sleep: You are getting less than 7 hours of sleep. Try to prioritize sleeping earlier to hit 7-8 hours.")
             
         if input_data.get("Sleep_Timing") == "Late":
-            suggestions.append("- Sleep Timing: Sleeping late disrupts your circadian rhythm. Try shifting your bedtime gradually to an earlier hour.")
+            suggestions.append("Sleep Timing: Sleeping late disrupts your circadian rhythm. Try shifting your bedtime gradually to an earlier hour.")
             
         if input_data.get("Exercise_Hours", 1) < 1.0:
-            suggestions.append("- Exercise & Yoga: Your physical activity is quite low. Even 15-30 minutes of daily exercise or yoga can significantly release endorphins and reduce stress hormones.")
+            suggestions.append("Exercise & Yoga: Your physical activity is low. Even 15-30 minutes of daily exercise or yoga can significantly release endorphins and reduce stress hormones.")
             
         social_hours = input_data.get("Instagram_Hours", 0) + input_data.get("Facebook_Hours", 0)
         if social_hours > 2:
-            suggestions.append(f"- Social Media: You spend around {social_hours} hours on social media. Reducing this screen time, especially before bed, can help lower anxiety.")
+            suggestions.append(f"Social Media: You spend around {social_hours} hours on social media. Reducing screen time before bed can help lower anxiety.")
             
         if input_data.get("Water_Intake", 8) < 5:
-            suggestions.append("- Hydration: You are drinking very little water. Dehydration can increase cortisol levels. Aim for at least 6-8 glasses a day.")
+            suggestions.append("Hydration: You are drinking very little water. Dehydration increases cortisol levels. Aim for at least 6-8 glasses a day.")
             
         work_study_hours = input_data.get("Working_Hours", 0) + input_data.get("Study_Hours", 0)
         if work_study_hours > 9:
-            suggestions.append(f"- Work/Study Balance: You are working/studying for {work_study_hours} hours. Ensure you are taking short regular breaks (like the Pomodoro technique) to avoid mental burnout.")
+            suggestions.append(f"Work/Study Balance: You are working/studying for {work_study_hours} hours. Use techniques like the Pomodoro method to take regular breaks and avoid mental burnout.")
             
         if input_data.get("Family_Issues") == 1:
-            suggestions.append("- Well-being: Family/Relationship issues are a major stressor. Consider talking to a trusted friend or counselor to process these feelings.")
+            suggestions.append("Well-being: Family or relationship issues are a major stressor right now. Consider talking to a trusted friend or counselor to process these feelings healthily.")
+            
+        if input_data.get("Exam_Preparation") == 1:
+            suggestions.append("Exams: Exam preparation is highly stressful. Make sure to break your syllabus into small achievable chunks and reward yourself for completing them.")
+            
+        if input_data.get("Weight", 70) > 90 and input_data.get("Exercise_Hours", 1) < 2:
+            suggestions.append("Diet & Movement: A healthy diet combined with light daily walks can improve your physical health, which directly supports your mental resilience against stress.")
             
     if not suggestions:
         if stress_level == "Low":
-            suggestions.append("- Keep up the balanced lifestyle! Your routine looks good.")
+            suggestions.append("Keep up the balanced lifestyle! Your routine looks extremely healthy.")
+            suggestions.append("Continue to prioritize your sleep and hydration.")
         else:
-            suggestions.append("- Try general relaxation techniques like deep breathing, meditation, or spending time in nature.")
+            suggestions.append("Try general relaxation techniques like deep breathing, meditation, or spending time in nature to center yourself.")
             
     return suggestions
 

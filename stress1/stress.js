@@ -35,7 +35,10 @@ async function detectStress() {
         // Send data to Flask Backend
         const response = await fetch('/api/predict', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': '69420'
+            },
             body: JSON.stringify(input_data)
         });
 
@@ -72,17 +75,61 @@ async function detectStress() {
 
             suggestion.innerHTML = html_suggestions;
 
+            // Show the download button
+            document.getElementById('actionButtons').style.display = 'flex';
+
+            // Save the raw text response for the download button
+            let reportText = `--- STRESS HEALTH REPORT ---\n`;
+            reportText += `User: ${input_data.email}\n`;
+            reportText += `Date: ${new Date().toLocaleString()}\n\n`;
+            reportText += `Prediction: ${stress_level} Stress Level\n\n`;
+            reportText += `Suggestions:\n`;
+            suggestions_list.forEach(sug => {
+                reportText += `- ${sug}\n`;
+            });
+            reportText += `\nThank you for using the Stress Health Monitor created by VISHAL GHASOLIYA.`;
+
+            window.latestReportText = reportText;
+
         } else {
             result.innerHTML = "❌ Error: Could not generate report.";
             suggestion.innerHTML = `<p>${apiData.error}</p>`;
         }
 
     } catch (error) {
-        result.innerHTML = "❌ Connection Error";
+        console.log(error);
+        result.innerHTML = "❌ ma ka bosra aag";
         suggestion.innerHTML = "<p>Could not connect to the Python Backend. Make sure app.py is running!</p>";
     } finally {
         // Re-enable button
         btn.innerText = "Check Stress Level";
         btn.disabled = false;
     }
+}
+
+function downloadReport() {
+    if (!window.latestReportText) {
+        alert("No report generated yet to download.");
+        return;
+    }
+
+    // Create a blob from the text
+    const blob = new Blob([window.latestReportText], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+
+    // Create a temporary anchor to trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Stress_Health_Report.txt';
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function logoutUser() {
+    localStorage.removeItem('userEmail');
+    window.location.href = 'login.html';
 }
