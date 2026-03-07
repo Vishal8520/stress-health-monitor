@@ -47,7 +47,12 @@ def register_user():
     data = request.json
     
     if users_collection is None:
-        return jsonify({"success": True, "message": "Mock Registration (MongoDB Offline)", "user_id": "mock_offline_user", "token": "mock_token"})
+        # Generate a valid JWT even in mock mode to pass the strict token_required check
+        token = jwt.encode({
+            'user': data.get("email", "mock_user"),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({"success": True, "message": "Mock Registration (MongoDB Offline)", "user_id": "mock_offline_user", "token": token})
         
     try:
         # Create a new document representing a user
@@ -92,7 +97,12 @@ def login_user():
     data = request.json
     
     if users_collection is None:
-        return jsonify({"success": True, "message": "Mock Login (MongoDB Offline)", "token": "mock_token"})
+        # Generate a valid JWT even in mock mode to pass the strict token_required check
+        token = jwt.encode({
+            'user': data.get("email", "mock_user"),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm="HS256")
+        return jsonify({"success": True, "message": "Mock Login (MongoDB Offline)", "token": token})
         
     try:
         email = data.get("email")
