@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Stress Health Monitor</title>
+    <link rel="stylesheet" href="stress.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🌿 Stress Health Monitor</h1>
+
+        <h2>Registration</h2>
+
+        <form id="registerForm">
+
+            <label>Name</label>
+            <input type="text" id="regName" required>
+
+            <label>Email</label>
+            <input type="email" id="regEmail" required>
+
+            <label>Password</label>
+            <input type="password" id="regPassword" required>
+
+            <button type="submit">Register</button>
+
+        </form>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="login.html" style="color: #27ae60; text-decoration: none; font-weight: 600;">Already have an
+                account? Login here</a>
+        </p>
+
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+
+            // Save email temporarily to link to report
+            localStorage.setItem('userEmail', data.email);
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = 'stress2.html';
+                } else {
+                    alert('Registration Failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error connecting to backend.');
+            }
+        });
+    </script>
+
+    <div class="watermark">Created by VISHAL GHASOLIYA</div>
+
+</body>
+
+</html>

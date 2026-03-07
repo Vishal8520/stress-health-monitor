@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Stress Features</title>
+    <link rel="stylesheet" href="stress.css">
+    <script src="stress.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h2>Enter Your Daily Habits</h2>
+
+        <form onsubmit="detectStress(); return false;">
+
+            <!-- Demographic -->
+            <label>Age</label>
+            <input type="number" id="age" required>
+
+            <label>Weight (kg)</label>
+            <input type="number" id="weight" required>
+
+            <!-- Daily Routine -->
+            <label>Sleep Hours</label>
+            <input type="number" step="0.5" id="sleep" required>
+
+            <label>Sleep Timing</label>
+            <select id="sleep_timing" required>
+                <option value="Early">Early (Before 10 PM)</option>
+                <option value="Normal" selected>Normal (10 PM - 12 AM)</option>
+                <option value="Late">Late (After 12 AM)</option>
+            </select><br><br>
+
+            <label>Work Hours</label>
+            <input type="number" step="0.5" id="work" required>
+
+            <label>Study Hours</label>
+            <input type="number" step="0.5" id="study" required>
+
+            <label>Exercise (hours/day)</label>
+            <input type="number" step="0.5" id="exercise" required>
+
+            <label>Water Intake (glasses)</label>
+            <input type="number" id="water" required>
+
+            <!-- Stress Factors -->
+            <label>Exam Preparation?</label>
+            <select id="exam_prep">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select><br><br>
+
+            <label>Family/Relationship Issues?</label>
+            <select id="family_issues">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select><br><br>
+
+            <!-- Social Media -->
+            <label>Do you use Social Media?</label>
+            <select id="social_media">
+                <option value="0">No</option>
+                <option value="1" selected>Yes</option>
+            </select><br><br>
+
+            <label>Instagram Hours (if yes)</label>
+            <input type="number" step="0.5" id="instagram" value="0">
+
+            <label>Facebook Hours (if yes)</label>
+            <input type="number" step="0.5" id="facebook" value="0">
+
+            <button type="submit">Check Stress Level</button>
+
+        </form>
+
+        <p id="result"></p>
+
+        <div id="suggestion"></div>
+
+    </div>
+
+    <div class="watermark">Created by VISHAL GHASOLIYA</div>
+
+</body>
+
+</html>
