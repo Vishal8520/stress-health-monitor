@@ -30,6 +30,9 @@ function logoutUser() {
     window.location.href = 'login.html';
 }
 
+// Store the context of the conversation
+let chatHistory = [];
+
 function appendMessage(text, sender) {
     const chatBox = document.getElementById('chatBox');
     const msgDiv = document.createElement('div');
@@ -55,7 +58,8 @@ document.getElementById('chatForm').addEventListener('submit', async function (e
     const messageText = inputField.value.trim();
     if (!messageText) return;
 
-    // Show user message
+    // Add to history and show
+    chatHistory.push({ role: "user", content: messageText });
     appendMessage(messageText, 'user');
     inputField.value = '';
 
@@ -77,7 +81,7 @@ document.getElementById('chatForm').addEventListener('submit', async function (e
                 'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'ngrok-skip-browser-warning': '69420'
             },
-            body: JSON.stringify({ message: messageText })
+            body: JSON.stringify({ messages: chatHistory })
         });
 
         const data = await response.json();
@@ -86,8 +90,11 @@ document.getElementById('chatForm').addEventListener('submit', async function (e
         document.getElementById(typingId).remove();
 
         if (data.success) {
+            chatHistory.push({ role: "assistant", content: data.response });
             appendMessage(data.response, 'bot');
         } else {
+            // Remove the failed user message from history if the backend crashed
+            chatHistory.pop();
             appendMessage("❌ Error: " + data.error, 'bot');
         }
     } catch (error) {

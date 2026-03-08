@@ -11,6 +11,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Initialize Flask app
+load_dotenv()
 app = Flask(__name__, static_folder='stress1')
 CORS(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret-key-change-in-prod')
@@ -160,35 +161,58 @@ def verify_auth_token(current_user):
 @token_required
 def handle_chat(current_user):
     data = request.json
-    user_message = data.get("message", "").lower()
+    messages = data.get("messages", [])
     
-    # Local Smart Keyword AI Engine
-    bot_response = "I am a basic Stress Health Assistant. How can I help you today? Try asking me about 'sleep', 'diet', 'anxiety', 'panic attacks', or 'symptoms like fever/cough'."
-    
-    if "sleep" in user_message or "insomnia" in user_message or "tired" in user_message:
-        bot_response = "Good sleep is the foundation of mental health. Try establishing a strict bedtime, reducing blue light 1 hour before bed, and keeping your room cool. If you can't sleep after 20 minutes, get out of bed and do something relaxing until you feel tired."
-    elif "anxi" in user_message or "worry" in user_message or "stress" in user_message:
-        bot_response = "It's completely normal to feel overwhelmed. When you feel anxious, try the 4-7-8 breathing method: inhale for 4 seconds, hold for 7, and exhale slowly for 8. Ground yourself by naming 3 things you can see, 2 you can touch, and 1 you can hear."
-    elif "panic" in user_message or "heart" in user_message or "attack" in user_message:
-        bot_response = "If you are having a panic attack: You are safe. This is just adrenaline and it WILL pass in a few minutes. Try holding an ice cube, splashing cold water on your face, or doing grounding exercises to shock your nervous system back to reality."
-    elif "diet" in user_message or "food" in user_message or "eat" in user_message:
-        bot_response = "Diet strongly impacts cortisol levels. High sugar and fast food can spike inflammation and anxiety. Focus on complex carbohydrates, omega-3s (like salmon or walnuts), and plenty of hydration to fuel your brain."
-    elif "hello" in user_message or "hi" in user_message or "hey" in user_message:
-        bot_response = f"Hello there! I'm your personal Stress Management AI. Feel free to ask me for advice on managing daily stress, panic symptoms, or improving your lifestyle habits."
-    elif "help" in user_message:
-        bot_response = "I can provide guidance on: 1. Sleep routines 2. Anxiety management 3. Stopping panic attacks 4. Dietary impacts on stress 5. Basic symptom checking (fever, cough). Please ask me about any of these topics!"
-    elif "fever" in user_message or "temperature" in user_message or "hot" in user_message:
-        bot_response = "A fever is usually a sign your body is fighting an infection. Rest, stay hydrated with water or clear broths, and take fever-reducing medication like acetaminophen or ibuprofen if needed. Seek immediate medical attention if your fever is over 103°F (39.4°C) or lasts more than 3 days."
-    elif "cough" in user_message or "sore throat" in user_message or "cold" in user_message:
-        bot_response = "For a cough or cold, focus on hydration and rest. Warm liquids like tea with honey can soothe a sore throat. Use a humidifier to add moisture to the air. If your cough brings up thick green/yellow mucus or is accompanied by chest pain or shortness of breath, please consult a doctor."
-    elif "headache" in user_message or "migraine" in user_message or "pain" in user_message:
-        bot_response = "Headaches can be caused by stress, dehydration, lack of sleep, or eye strain. Drink a large glass of water, rest in a dark, quiet room, and try a cold compress on your forehead. If it is the 'worst headache of your life', sudden and severe, seek emergency care."
-    elif "nausea" in user_message or "vomit" in user_message or "stomach" in user_message:
-        bot_response = "For stomach issues or nausea, stick to the BRAT diet (Bananas, Rice, Applesauce, Toast) and sip clear fluids slowly to prevent dehydration. Avoid dairy, caffeine, and spicy or greasy foods."
-    elif "symptom" in user_message or "disease" in user_message or "sick" in user_message:
-        bot_response = "I can provide basic advice for common symptoms like a 'fever', 'cough', 'headache', or 'nausea'. What specific symptom are you experiencing? Remember, I am an AI and this is not a substitute for professional medical diagnosis."
-    elif "doctor" in user_message or "therapist" in user_message:
-        bot_response = "While I can provide educational suggestions, I am an AI and cannot replace real medical advice. If your stress is causing severe physical symptoms, depression, or suicidal thoughts, please reach out to a local healthcare professional or hotline immediately."
+    try:
+        system_prompt = (
+            "You are a highly smart, accurate AI Medical and Health Assistant. "
+            "You will be acting as a healthcare chatbot who takes health issues, diseases, or symptoms into consideration. "
+            "You must comprehensively cover ANY disease requested. "
+            "Provide accurate medical advice, home health methods/suggestions, and SPECIFICALLY name generally available over-the-counter (OTC) medicines for the illness described. "
+            "Keep the response concise, formatted in plain text, and strictly under 4-5 sentences. "
+            "Never append advertisements or external links."
+        )
+
+        full_messages = [{"role": "system", "content": system_prompt}] + messages
+
+        if os.getenv("OPENAI_API_KEY"):
+            from openai import OpenAI
+            client = OpenAI() # automatically loaded from env var
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=full_messages
+            )
+            bot_response = response.choices[0].message.content
+            
+        elif os.getenv("ANTHROPIC_API_KEY"):
+            from anthropic import Anthropic
+            client = Anthropic() # automatically loaded from env var
+            # Claude format for system prompt is slightly different
+            user_msgs = [m for m in messages if m["role"] != "system"]
+            response = client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=1024,
+                system=system_prompt,
+                messages=user_msgs
+            )
+            bot_response = response.content[0].text
+            
+        else:
+            # Fallback to free G4F tier if no API keys are present
+            from g4f.client import Client
+            client = Client()
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=full_messages
+            )
+            bot_response = response.choices[0].message.content
+            
+            # Strip potential g4f injected ads
+            if "Need proxies cheaper" in bot_response:
+                bot_response = bot_response.split("Need proxies")[0].strip()
+
+    except Exception as e:
+        bot_response = f"I am currently experiencing higher than normal API volume. Please try again in a few moments. (Error: {str(e)})"
 
     return jsonify({
         "success": True, 
