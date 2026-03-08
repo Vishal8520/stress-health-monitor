@@ -11,7 +11,14 @@
 
     <div class="container">
 
-        <h2>Enter Your Daily Habits</h2>
+        <div class="nav-links">
+            <h2 style="font-size: 32px; margin-bottom: 25px;">Enter Details</h2>
+            <div style="display: flex; gap: 10px; flex-shrink: 0; align-items: baseline;">
+                <a href="chat.html" class="nav-a" style="color: #8b5cf6; font-weight: bold; text-decoration: none;">💬
+                    Ask AI Assistant</a>
+            </div>
+        </div>
+        <h2>Your Daily Habits</h2>
 
         <form onsubmit="detectStress(); return false;">
 
@@ -26,11 +33,17 @@
             <label>Sleep Hours</label>
             <input type="number" step="0.5" id="sleep" max="12" required>
 
-            <label>Sleep Timing</label>
-            <select id="sleep_timing" required>
+            <label>Sleep Timing (Early, Normal, Late)</label>
+            <select id="sleep_timing">
                 <option value="Early">Early (Before 10 PM)</option>
-                <option value="Normal" selected>Normal (10 PM - 12 AM)</option>
+                <option value="Normal">Normal (10 PM - 12 AM)</option>
                 <option value="Late">Late (After 12 AM)</option>
+            </select><br><br>
+
+            <label>Location Type (Environment)</label>
+            <select id="location_type">
+                <option value="Urban">Urban (City living)</option>
+                <option value="Rural">Rural (Town/Countryside)</option>
             </select><br><br>
 
             <label>Work Hours</label>
@@ -44,6 +57,19 @@
 
             <label>Water Intake (glasses)</label>
             <input type="number" id="water" max="10" required>
+
+            <!-- Diet & Health -->
+            <label>Diet Quality (1-10, 10 is very healthy)</label>
+            <input type="number" id="healthy_diet" min="1" max="10" required>
+
+            <label>Fast Food per week</label>
+            <input type="number" id="fast_food" min="0" required>
+
+            <label>Current Health Issues?</label>
+            <select id="health_issues">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select><br><br>
 
             <!-- Stress Factors -->
             <label>Exam Preparation?</label>
@@ -89,9 +115,9 @@
 
     <div class="watermark">Created by VISHAL GHASOLIYA</div>
 
-    <!-- Ensure logic functions are linked -->
+    <!-- jsPDF Library for generating PDF Reports directly in the browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="stress.js"></script>
-
 </body>
 
 </html>

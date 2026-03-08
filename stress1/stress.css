@@ -212,20 +212,55 @@ button:active {
     font-size: 15.5px;
 }
 
-/* Specific styling for high and medium stress levels applied via JS */
-.high-stress {
-    color: #b91c1c;
-    background: rgba(254, 226, 226, 0.8);
-}
-
-.medium-stress {
-    color: #b45309;
-    background: rgba(254, 243, 199, 0.8);
-}
-
-.low-stress {
-    color: #047857;
+/* Specific styling for 5 stress levels applied via JS */
+.minimal-stress {
+    color: #059669;
+    /* Emerald Green */
     background: rgba(209, 250, 229, 0.8);
+    border-left: 6px solid #059669;
+}
+
+.mild-stress {
+    color: #65a30d;
+    /* Lime Green */
+    background: rgba(236, 252, 203, 0.8);
+    border-left: 6px solid #65a30d;
+}
+
+.moderate-stress {
+    color: #d97706;
+    /* Amber */
+    background: rgba(254, 243, 199, 0.8);
+    border-left: 6px solid #d97706;
+}
+
+.high-stress {
+    color: #ea580c;
+    /* Orange */
+    background: rgba(255, 237, 213, 0.8);
+    border-left: 6px solid #ea580c;
+}
+
+.critical-stress {
+    color: #dc2626;
+    /* Deep Red */
+    background: rgba(254, 226, 226, 0.9);
+    border-left: 6px solid #dc2626;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
 }
 
 .watermark {

@@ -14,6 +14,12 @@ def generate_stress_data(num_samples=10000):
     exercise_hours = np.random.normal(1, 1, num_samples).clip(0, 4)
     water_intake = np.random.normal(6, 2, num_samples).clip(0, 15) # Glasses of water
     
+    # Additional Lifestyle & Health
+    healthy_diet = np.random.normal(5, 2, num_samples).clip(1, 10).astype(int) # Scale 1 to 10
+    fast_food_weekly = np.random.normal(2, 2, num_samples).clip(0, 14).astype(int) # Times per week
+    health_issues = np.random.choice([0, 1], num_samples, p=[0.85, 0.15]) # 0 No, 1 Yes
+    location_type = np.random.choice(["Urban", "Rural"], num_samples, p=[0.6, 0.4])
+    
     # Binary Features (0 or 1)
     exam_preparation = np.random.choice([0, 1], num_samples, p=[0.7, 0.3])
     family_issues = np.random.choice([0, 1], num_samples, p=[0.8, 0.2])
@@ -41,20 +47,32 @@ def generate_stress_data(num_samples=10000):
     stress_score += np.where(weight > 100, 1.0, 0) # High weight slight stress factor
     stress_score -= (exercise_hours * 1.5) # Exercise strongly reduces stress
     stress_score -= (water_intake * 0.2) # Hydration slightly reduces stress
+    
+    # Diet and Health adjustments
+    stress_score -= (healthy_diet * 0.4) # Good diet reduces stress
+    stress_score += (fast_food_weekly * 0.45) # Fast food spikes stress heavily
+    stress_score += (health_issues * 3.5) # Health issues are a massive stressor
+    stress_score += np.where(location_type == "Urban", 1.2, 0) # Urban living baseline stress
 
     # Normalize roughly and categorize
     # Let's say: 
-    # score < 5: Low Stress
-    # 5 <= score < 9: Medium Stress
-    # score >= 9: High Stress
+    # score < 4.5: Minimal
+    # 4.5 <= score < 7: Mild
+    # 7 <= score < 9.5: Moderate
+    # 9.5 <= score < 12.5: High
+    # score >= 12.5: Critical
     stress_level = []
     for s in stress_score:
-        if s < 6:
-            stress_level.append("Low")
-        elif s < 10.5:
-            stress_level.append("Medium")
-        else:
+        if s < 4.5:
+            stress_level.append("Minimal")
+        elif s < 7:
+            stress_level.append("Mild")
+        elif s < 9.5:
+            stress_level.append("Moderate")
+        elif s < 12.5:
             stress_level.append("High")
+        else:
+            stress_level.append("Critical")
 
     # Create DataFrame
     df = pd.DataFrame({
@@ -66,8 +84,12 @@ def generate_stress_data(num_samples=10000):
         "Study_Hours": np.round(study_hours, 1),
         "Exercise_Hours": np.round(exercise_hours, 1),
         "Water_Intake": np.round(water_intake, 1),
+        "Healthy_Diet": healthy_diet,
+        "Fast_Food_Weekly": fast_food_weekly,
+        "Health_Issues": health_issues,
         "Exam_Preparation": exam_preparation, # 0 No, 1 Yes
         "Family_Issues": family_issues,       # 0 No, 1 Yes
+        "Location_Type": location_type,       # Urban or Rural
         "Social_Media_Usage": social_media_usage, # 0 No, 1 Yes
         "Instagram_Hours": np.round(instagram_hours, 1),
         "Facebook_Hours": np.round(facebook_hours, 1),

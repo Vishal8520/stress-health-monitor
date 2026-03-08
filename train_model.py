@@ -23,6 +23,10 @@ def train():
     # 'Sleep_Timing' is categorical
     le_sleep = LabelEncoder()
     X['Sleep_Timing'] = le_sleep.fit_transform(X['Sleep_Timing'])
+    
+    # 'Location_Type' is categorical
+    le_location = LabelEncoder()
+    X['Location_Type'] = le_location.fit_transform(X['Location_Type'])
 
     # Encode Target
     le_target = LabelEncoder()
@@ -60,6 +64,7 @@ def train():
         "model": rf_model,
         "scaler": scaler,
         "le_sleep": le_sleep,
+        "le_location": le_location,
         "le_target": le_target,
         "feature_names": X.columns.tolist()
     }

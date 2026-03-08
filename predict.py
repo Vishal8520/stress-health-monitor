@@ -16,8 +16,20 @@ def get_stress_suggestions(input_data, stress_level):
     """Generates actionable suggestions based on input features and predicted stress."""
     suggestions = []
     
-    # If stress is Medium or High, provide mitigation strategies
-    if stress_level in ["Medium", "High"]:
+    # Foundational Level-Specific Advice
+    if stress_level == "Minimal":
+        suggestions.append("Base Status (Minimal): Outstanding baseline health! Your routine and environment are incredibly well optimized for mental resilience.")
+    elif stress_level == "Mild":
+        suggestions.append("Base Status (Mild): You are operating functionally and healthy, though you experience standard day-to-day pressures. Maintain your current coping habits.")
+    elif stress_level == "Moderate":
+        suggestions.append("Base Status (Moderate): Warning sign. You are carrying a noticeable load of persistent stress. Fatigue may be setting in; it's time to intentionally schedule daily decompression blocks.")
+    elif stress_level == "High":
+        suggestions.append("Base Status (High): Red Alert. Your nervous system is under severe, compounding pressure. Physical symptoms (tension, poor sleep) are highly likely. Immediate intervention in your routine is required.")
+    elif stress_level == "Critical":
+        suggestions.append("Base Status (Critical): Severe Burnout Threshold. You are operating at an unsustainable level of chronic stress. Please pause, re-evaluate your commitments immediately, and strongly consider consulting a medical or mental health professional for support.")
+
+    # Feature-Specific Mitigation (Applied to Moderate, High, and Critical levels)
+    if stress_level in ["Moderate", "High", "Critical"]:
         if input_data.get("Sleep_Hours", 8) < 7:
             suggestions.append("Sleep: You are getting less than 7 hours of sleep. Try to prioritize sleeping earlier to hit 7-8 hours.")
             
@@ -47,10 +59,24 @@ def get_stress_suggestions(input_data, stress_level):
         if input_data.get("Weight", 70) > 90 and input_data.get("Exercise_Hours", 1) < 2:
             suggestions.append("Diet & Movement: A healthy diet combined with light daily walks can improve your physical health, which directly supports your mental resilience against stress.")
             
-    if not suggestions:
-        if stress_level == "Low":
-            suggestions.append("Keep up the balanced lifestyle! Your routine looks extremely healthy.")
-            suggestions.append("Continue to prioritize your sleep and hydration.")
+        if input_data.get("Healthy_Diet", 5) < 4:
+            suggestions.append("Nutrition: Your diet lacks essential nutrients. Focus on eating more whole foods, vegetables, and proteins to fuel your brain properly and reduce physical stress.")
+            
+        if input_data.get("Fast_Food_Weekly", 0) >= 3:
+            suggestions.append(f"Fast Food: Eating fast food {input_data.get('Fast_Food_Weekly')} times a week can cause lethargy and inflammation. Cutting back will improve your energy levels remarkably.")
+            
+        if input_data.get("Health_Issues") == 1:
+            suggestions.append("General Health: Coping with health issues is inherently stressful. Please ensure you are regularly consulting your doctor and not ignoring your bodily symptoms. Self-care is paramount.")
+            
+        if input_data.get("Location_Type") == "Urban":
+            suggestions.append("Environment (Urban): City living inherently introduces background stressors like noise, traffic, and high-paced lifestyles. Try to plan weekend getaways to nature or quiet parks to decompress your nervous system.")
+            
+        if input_data.get("Location_Type") == "Rural" and input_data.get("Family_Issues") == 1:
+             suggestions.append("Community (Rural): While rural areas are peaceful, isolation can worsen family stress. Consider finding a local community group or online counseling to find social support.")
+            
+    if len(suggestions) <= 1: # Only has the base status
+        if stress_level in ["Minimal", "Mild"]:
+            suggestions.append("Continue prioritizing your excellent sleep hydration routines.")
         else:
             suggestions.append("Try general relaxation techniques like deep breathing, meditation, or spending time in nature to center yourself.")
             
@@ -73,6 +99,7 @@ def predict_stress(input_data):
     model = pipeline["model"]
     scaler = pipeline["scaler"]
     le_sleep = pipeline["le_sleep"]
+    le_location = pipeline.get("le_location") # Get new encoder safely
     le_target = pipeline["le_target"]
     feature_names = pipeline["feature_names"]
 
@@ -90,6 +117,9 @@ def predict_stress(input_data):
     # Preprocessing
     # 1. Encode Categorical Features
     df['Sleep_Timing'] = le_sleep.transform(df['Sleep_Timing'])
+    
+    if le_location is not None and 'Location_Type' in df.columns:
+        df['Location_Type'] = le_location.transform(df['Location_Type'])
 
     # 2. Scale Numerical Features
     df_scaled = scaler.transform(df)
@@ -114,8 +144,12 @@ if __name__ == "__main__":
         "Study_Hours": 6,
         "Exercise_Hours": 0.5,
         "Water_Intake": 3,
+        "Healthy_Diet": 3,
+        "Fast_Food_Weekly": 4,
+        "Health_Issues": 1,
         "Exam_Preparation": 1, 
-        "Family_Issues": 0,       
+        "Family_Issues": 0, 
+        "Location_Type": "Urban",
         "Social_Media_Usage": 1, 
         "Instagram_Hours": 3.5,
         "Facebook_Hours": 1.0
@@ -130,9 +164,13 @@ if __name__ == "__main__":
         "Study_Hours": 0,
         "Exercise_Hours": 2.5,
         "Water_Intake": 8,
+        "Healthy_Diet": 9,
+        "Fast_Food_Weekly": 0,
+        "Health_Issues": 0,
         "Exam_Preparation": 0, 
         "Family_Issues": 0,       
-        "Social_Media_Usage": 1, 
+        "Location_Type": "Rural",
+        "Social_Media_Usage": 1,
         "Instagram_Hours": 0.5,
         "Facebook_Hours": 1.0
     }
